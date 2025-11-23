@@ -6,7 +6,12 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
 
-export default function Navbar() {
+// Agrega la interface para las props
+interface NavbarProps {
+  onMobileMenuToggle: () => void;
+}
+
+export default function Navbar({ onMobileMenuToggle }: NavbarProps) {
   const [user, setUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -31,6 +36,10 @@ export default function Navbar() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setShowMobileMenu(false);
+  };
+
+  const handleMobileMenuToggle = () => {
+    onMobileMenuToggle();
   };
 
   return (
@@ -98,7 +107,7 @@ export default function Navbar() {
         {/* Mobile Navbar */}
         <div className="md:hidden flex items-center justify-between px-4 py-3">
           <button 
-            onClick={() => setShowMobileMenu(true)} 
+            onClick={handleMobileMenuToggle} 
             className="p-2"
           >
             <i className="fas fa-bars text-xl"></i>
@@ -115,91 +124,6 @@ export default function Navbar() {
           </Link>
         </div>
       </nav>
-
-      {/* Mobile Menu Overlay */}
-      {showMobileMenu && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div 
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowMobileMenu(false)}
-          />
-          
-          <div className="absolute left-0 top-0 h-full w-64 bg-white shadow-xl">
-            <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between p-4 border-b">
-                <span className="font-bold text-xl">Menú</span>
-                <button 
-                  onClick={() => setShowMobileMenu(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full"
-                >
-                  <i className="fas fa-times text-xl"></i>
-                </button>
-              </div>
-
-              <nav className="flex-1 p-4">
-                <ul className="space-y-2">
-                  <li>
-                    <Link 
-                      href="/" 
-                      className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      <i className="fas fa-home text-xl text-gray-700 w-6"></i>
-                      <span>Inicio</span>
-                    </Link>
-                  </li>
-                  
-                  <li>
-                    <Link 
-                      href="/create-pin" 
-                      className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      <i className="fas fa-plus text-xl text-gray-700 w-6"></i>
-                      <span>Crear Pin</span>
-                    </Link>
-                  </li>
-
-                  {user ? (
-                    <>
-                      <li>
-                        <Link 
-                          href="/profile" 
-                          className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"
-                          onClick={() => setShowMobileMenu(false)}
-                        >
-                          <i className="fas fa-user text-xl text-gray-700 w-6"></i>
-                          <span>Mi Perfil</span>
-                        </Link>
-                      </li>
-                      <li>
-                        <button 
-                          onClick={handleSignOut}
-                          className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg w-full text-left"
-                        >
-                          <i className="fas fa-sign-out-alt text-xl text-gray-700 w-6"></i>
-                          <span>Cerrar Sesión</span>
-                        </button>
-                      </li>
-                    </>
-                  ) : (
-                    <li>
-                      <Link 
-                        href="/auth" 
-                        className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg"
-                        onClick={() => setShowMobileMenu(false)}
-                      >
-                        <i className="fas fa-sign-in-alt text-xl text-gray-700 w-6"></i>
-                        <span>Iniciar Sesión</span>
-                      </Link>
-                    </li>
-                  )}
-                </ul>
-              </nav>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
