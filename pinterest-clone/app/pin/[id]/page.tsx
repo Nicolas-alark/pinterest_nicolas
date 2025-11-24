@@ -69,7 +69,7 @@ export default function PinDetailPage() {
         <main className="pt-20 flex flex-col justify-center items-center h-96">
           <div className="text-red-600 text-lg mb-4">{error || 'Pin no encontrado'}</div>
           <button 
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/Feed')}
             className="px-6 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
           >
             Volver al inicio

@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import PinCard from './PinCard'
 import { pinService } from '@/lib/pinService'
 import { Pin } from '@/types/database'
 import { useAuth } from '@/contexts/AuthContext'
 
-export default function Feed() {
+export default function Feed({ searchQuery }: { searchQuery: string }) {
   const [pins, setPins] = useState<Pin[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -20,19 +20,23 @@ export default function Feed() {
     try {
       setLoading(true)
       setError(null)
-      console.log('Cargando pins...', { userId: user?.id })
-      
+
       const pinsData = await pinService.getAllPins(user?.id)
-      console.log('Pins cargados:', pinsData)
-      
       setPins(pinsData)
     } catch (err: any) {
-      console.error('Error detallado loading pins:', err)
       setError(err.message || 'Error al cargar los pins')
     } finally {
       setLoading(false)
     }
   }
+
+  // ⭐ FILTRADO EN TIEMPO REAL
+  const filteredPins = useMemo(() => {
+    if (!searchQuery.trim()) return pins
+    return pins.filter((pin) =>
+      pin.title.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [pins, searchQuery])
 
   if (loading) {
     return (
@@ -61,20 +65,19 @@ export default function Feed() {
 
   return (
     <div className="px-4 max-w-7xl mx-auto">
+      {/* GRID DE PINS */}
       <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 gap-4">
-        {pins.map((pin) => (
+        {filteredPins.map((pin) => (
           <PinCard key={pin.id} pin={pin} />
         ))}
       </div>
-      {pins.length === 0 && (
+
+      {/* MENSAJE SI NO HAY RESULTADOS */}
+      {filteredPins.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No hay pins disponibles</p>
-          <button 
-            onClick={loadPins}
-            className="mt-4 px-6 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
-          >
-            Recargar
-          </button>
+          <p className="text-gray-500 text-lg">
+            No encontramos resultados para: <strong>{searchQuery}</strong>
+          </p>
         </div>
       )}
     </div>
