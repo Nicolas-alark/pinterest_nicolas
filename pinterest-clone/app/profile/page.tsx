@@ -25,7 +25,7 @@ export default function ProfilePage() {
       const currentUser = await authService.getCurrentUser()
       setUser(currentUser)
       if (currentUser) {
-        setEmail(currentUser.email)
+        setEmail(currentUser.email || '')
         const { data } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single()
         if (data) {
           setUsername(data.username || '')
