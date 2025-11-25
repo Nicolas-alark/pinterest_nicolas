@@ -5,16 +5,16 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { User } from '@supabase/supabase-js'
-import CreatePinModal from './CreatePinModal'
 
 export default function BottomNav() {
   const pathname = usePathname()
   const [user, setUser] = useState<User | null>(null)
-  const [showCreateModal, setShowCreateModal] = useState(false)
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       setUser(user)
     }
     getUser()
@@ -27,18 +27,13 @@ export default function BottomNav() {
   const navItems = [
     { href: '/', icon: 'fas fa-home', label: 'Inicio' },
     { href: '/search', icon: 'fas fa-search', label: 'Buscar' },
-    { 
-      icon: 'fas fa-plus', 
+    {
+      href: '/create-pin', // Cambiado de acción modal a ruta
+      icon: 'fas fa-plus',
       label: 'Crear',
-      action: () => setShowCreateModal(true)
     },
     { href: '/profile', icon: 'fas fa-user', label: 'Perfil' },
   ]
-
-  const handlePinCreated = () => {
-    setShowCreateModal(false)
-    // Si necesitas, aquí puedes recargar pins o hacer acciones extra
-  }
 
   return (
     <>
@@ -47,21 +42,7 @@ export default function BottomNav() {
         <div className="flex justify-around items-center py-2">
           {navItems.map((item) => {
             const isActive = item.href ? pathname === item.href : false
-            if (item.action) {
-              return (
-                <button
-                  key={item.label}
-                  onClick={item.action}
-                  className="flex flex-col items-center p-2"
-                >
-                  <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center -mt-6">
-                    <i className={`${item.icon} text-white text-lg`}></i>
-                  </div>
-                  <span className="text-xs mt-1 text-gray-600">{item.label}</span>
-                </button>
-              )
-            }
-            return (
+            return item.href ? (
               <Link
                 key={item.label}
                 href={item.href}
@@ -72,20 +53,11 @@ export default function BottomNav() {
                 <i className={`${item.icon} text-xl`}></i>
                 <span className="text-xs mt-1">{item.label}</span>
               </Link>
-            )
+            ) : null
           })}
         </div>
       </nav>
       <div className="pb-16"></div>
-      
-      {/* Modal para crear pin */}
-      {showCreateModal && (
-        <CreatePinModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onPinCreated={handlePinCreated}
-        />
-      )}
     </>
   )
 }
