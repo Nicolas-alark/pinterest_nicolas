@@ -39,11 +39,101 @@ export default function ProfilePage() {
     setShouldFetch(false)
   }, [shouldFetch])
 
-  const handleSignIn = async () => { /* igual que antes */ }
-  const handleSignUp = async () => { /* igual que antes */ }
-  const handleSignOut = async () => { /* igual que antes */ }
-  const handleDeleteAccount = async () => { /* igual que antes */ }
-  const handleSave = async () => { /* igual que antes */ }
+  const handleSignIn = async () => {
+    setLoading(true)
+    setMessage(null)
+    try {
+      await authService.signIn(email, password)
+      setMessage('Inicio de sesión exitoso')
+      setShouldFetch(true)
+    } catch (error: any) {
+      setMessage(error.message || 'Error al iniciar sesión')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSignUp = async () => {
+    setLoading(true)
+    setMessage(null)
+    try {
+      await authService.signUp(email, password)
+      setMessage('Cuenta creada, revisa tu email para confirmar')
+      setShouldFetch(true)
+    } catch (error: any) {
+      setMessage(error.message || 'Error al crear cuenta')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    setLoading(true)
+    setMessage(null)
+    try {
+      await authService.signOut()
+      setUser(null)
+      setUsername('')
+      setFullName('')
+      setAvatar('')
+      setWebsite('')
+      setEmail('')
+      setPassword('')
+      setMessage('Sesión cerrada')
+      setShouldFetch(true)
+      router.refresh()
+    } catch (error: any) {
+      setMessage(error.message || 'Error al cerrar sesión')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!user) return
+    if (!window.confirm('¿Seguro que deseas eliminar tu cuenta definitivamente? Esta acción no se puede deshacer.')) return
+    setDeleting(true)
+    setMessage(null)
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(user.id)
+      if (error) {
+        setMessage('No se pudo eliminar la cuenta: ' + error.message)
+      } else {
+        setMessage('Cuenta eliminada correctamente.')
+        await authService.signOut()
+        setUser(null)
+        setUsername('')
+        setFullName('')
+        setAvatar('')
+        setWebsite('')
+        setEmail('')
+        setPassword('')
+        setShouldFetch(true)
+        router.refresh()
+      }
+    } catch (error: any) {
+      setMessage(error.message || 'Error al eliminar cuenta')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!user) return
+    setLoading(true)
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        username,
+        full_name: fullName,
+        avatar_url: avatar,
+        website
+      })
+    setLoading(false)
+    if (error) setMessage('Error al guardar cambios: ' + error.message)
+    else setMessage('Cambios guardados')
+  }
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex justify-center items-center px-2 py-8">
